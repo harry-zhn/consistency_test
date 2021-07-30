@@ -23,7 +23,7 @@ object_properties = [
     'wait_until_not_exists'
 ]
 
-bucket_name = "netapp-consistency-test"
+bucket_name = "zharry-consistency-level-test"
 object_key_for_overrite = "overwrite_this"
 
 key_tag = "aws_access_key_id"
