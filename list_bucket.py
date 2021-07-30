@@ -13,7 +13,9 @@ def test(aws_access_key, aws_secret_access, verify_cert = True, endpoint_url = N
     
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     bucket = common.get_bucket(s3_resource, common.bucket_name)
-    common.upload_file(s3_resource, common.bucket_name, "temp1", '/Users/harryzhang/README.md', lambda: print())
+
+    metadata  = {'prop1': 'val1', 'prop2': 'val2'}
+    common.upload_file(s3_resource, common.bucket_name, "temp1", '/Users/harryzhang/README.md', metadata= metadata )
     for obj in bucket.objects.all():
         print(obj.key, obj.size, obj.owner, obj.meta, obj.last_modified)
 

@@ -75,10 +75,21 @@ def get_bucket(s3_resource, bucket_name):
     bucket = s3_resource.Bucket(bucket_name)
     return bucket
 
-def upload_file(s3_resource, bucket_name, key, file_path, callback):
-    s3_resource.Object(bucket_name, key).upload_file(file_path)
+def upload_file(s3_resource, bucket_name, key, file_path, metadata = None, acl = None):
+    '''
+    valid acl: # please make sure you have the permission to set acl on objects
+        'pubic-read'
+    '''
+    extra_args = {}
+    if metadata:
+        extra_args["Metadata"] = metadata
+    if acl:
+        extra_args['ACL'] = acl
+    s3_resource.Object(bucket_name, key).upload_file(file_path, ExtraArgs = extra_args)
     obj = s3_resource.Object(bucket_name, key)
     obj.download_file('/Users/harryzhang/git/consistency_test/test_data/download/test.txt')
+    if obj.metadata == metadata:
+        print("metadata match")
 
 def list_objects(s3_client, bucket_name):
     return s3_client.list_objects_v2(Bucket="netapp-consistency-test")
