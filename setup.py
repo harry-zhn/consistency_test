@@ -19,10 +19,6 @@ def list_s3_objects(bucket):
     for obj in bucket.objects.all():
         print(obj.key)
 
-def download_object(bucket, obj_key):
-    pass
-    # TODO: download object
-
 def get_MD5(full_file_path):
     '''
     This is to generate ETag of upload
@@ -38,9 +34,3 @@ def get_MD5(full_file_path):
 
         file_hash_result = file_hash.hexdigest()
     return file_hash_result
-
-bucket = get_s3_bucket()
-list_s3_objects(bucket)
-# file_path = '~/README.md'
-file_path = '~/Downloads/cpptools-linux.vsix'
-print(get_MD5(file_path))
