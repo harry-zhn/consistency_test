@@ -1,0 +1,30 @@
+api                                  | testable  | notes
+-------------------------------------------------------------
+1.      for objects                  |
+1.1     CopyObject                   | yes       | overwrite_test.py
+1.2     PutObject                    | yes       | overwrite_test.py
+1.2.1   GetObject
+1.2.2   HeadObject
+1.3     PutObjectAcl                 |
+1.3.1   GetObjectAcl                 |
+1.4     PutObjectLegalHold           |
+1.4.1   GetObjectLegalHold           |
+1.5     PutObjectTagging             |
+1.5.1   GetObjectTagging             |
+1.6     PutObjectRetention           |
+1.6.1   GetObjectRetention           |
+----------------------------------------------------------------
+1.7     ListObjects
+1.8     ListObjectsV2
+1.9     ListObjectVersions
+-----------------------------------------------------------------
+1.10    DeleteObject
+1.11    DeleteObjects
+-----------------------------------------------------------------
+1.12    CreateMultiPartUpload
+1.12.1  UploadPart
+1.12.2  UploadPartCopy
+1.12.3  ListParts
+1.12.4  ListMultipartUploads
+1.12.5  CompleteMultipartUpload
+1.12.6  AbortMultipartUpload
