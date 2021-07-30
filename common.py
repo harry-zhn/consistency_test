@@ -1,7 +1,8 @@
 import os
+import hashlib
 
 import boto3
-import boto3.exceptions
+import botocore
 
 object_properties = [
     #'delete',
@@ -23,6 +24,7 @@ object_properties = [
 ]
 
 bucket_name = "netapp-consistency-test"
+object_key_for_overrite = "overwrite_this"
 
 key_tag = "aws_access_key_id"
 secret_key_tag = "aws_secret_access_key"
@@ -75,21 +77,36 @@ def get_bucket(s3_resource, bucket_name):
     bucket = s3_resource.Bucket(bucket_name)
     return bucket
 
-def upload_file(s3_resource, bucket_name, key, file_path, metadata = None, acl = None):
-    '''
-    valid acl: # please make sure you have the permission to set acl on objects
-        'pubic-read'
-    '''
-    extra_args = {}
-    if metadata:
-        extra_args["Metadata"] = metadata
-    if acl:
-        extra_args['ACL'] = acl
-    s3_resource.Object(bucket_name, key).upload_file(file_path, ExtraArgs = extra_args)
-    obj = s3_resource.Object(bucket_name, key)
-    obj.download_file('/Users/harryzhang/git/consistency_test/test_data/download/test.txt')
-    if obj.metadata == metadata:
-        print("metadata match")
-
 def list_objects(s3_client, bucket_name):
     return s3_client.list_objects_v2(Bucket="netapp-consistency-test")
+
+def get_MD5(full_file_path):
+    '''
+    This is to generate ETag of upload
+    '''
+    file_hash_result = ""
+    full_file_path = os.path.expanduser(full_file_path)
+    full_file_path = os.path.expandvars(full_file_path)
+    if os.path.isfile(full_file_path):
+        file_hash = hashlib.md5()
+        with open(full_file_path, "rb") as f:
+            while chunk := f.read(8192):
+                file_hash.update(chunk)
+
+        file_hash_result = str.format('"{}"',file_hash.hexdigest())
+    return file_hash_result
+def empty_bucket(s3_resource, bucket_name):
+    bucket = get_bucket(s3_resource, bucket_name)
+    for obj in bucket.objects.all():
+        obj.delete()
+    print(f"s3 bucket:[{bucket_name}] should be empty now")
+    for obj in bucket.objects.all():
+        print(obj.key, obj.delete_marker)
+    s3_obj = s3_resource.Object(bucket_name, "food")
+    try:
+        print("Trying to get object with key [foo]")
+        print(s3_obj.content_length)
+    except botocore.exceptions.ClientError as error:
+        print(error.response)
+
+
