@@ -90,8 +90,10 @@ def get_MD5(full_file_path):
     if os.path.isfile(full_file_path):
         file_hash = hashlib.md5()
         with open(full_file_path, "rb") as f:
+            chunk = f.read(8192)
             while chunk := f.read(8192):
                 file_hash.update(chunk)
+                chunk = f.read(8192)
 
         file_hash_result = str.format('"{}"',file_hash.hexdigest())
     return file_hash_result
