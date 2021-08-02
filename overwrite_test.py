@@ -43,14 +43,14 @@ def test(s3_resource, repeat = 200):
     prev_time = current_time
     part_of_filename = f'{current_date.year:04}-{current_date.month:02}-{current_date.day:02}_{time_stamp.hour:02}-{time_stamp.minute:02}-{time_stamp.second:02}'
     report_filename = os.path.join(local_work_dir, "test_data", f'{part_of_filename}_report.txt')
-    with open(report_filename, "w") as report_file:
+    with open(report_filename, "x") as report_file:
         report_file.write(f"test on key {object_key} at {current_time} \n")
         report_file.write(f'trying to repeat {repeat} times\n')
         for step in range(repeat):
             short_filename = str.format('{0}_{1}', step, part_of_filename)
             upload_file = os.path.join(upload_dir, short_filename)
             download_file = os.path.join(download_dir, short_filename)
-            with open(upload_file, 'w') as source:
+            with open(upload_file, 'x') as source:
                 source.write(f"overwrite test at {current_time}")
                 loop_count = random.randrange(10, 30)
                 for i in range(loop_count):
