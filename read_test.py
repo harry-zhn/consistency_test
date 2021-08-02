@@ -29,10 +29,11 @@ def test(s3_resource, repeat = 200):
             download_size = os.stat(download_file).st_size
             #report file info here
             fetched_uuid = s3_obj.metadata['uuid']
-            report_file.write(f'uuid: {fetched_uuid}, last modified {s3_obj.last_modified}, content_length: {s3_obj.content_length} \n')
             e_tag_download = common.get_MD5(download_file)
             if e_tag_download != s3_obj.e_tag:
                 print("e_tag is wrong as meta data, ", s3_obj.e_tag, "original file, ", e_tag_download, file = report_file)
+            report_file.write(f'uuid: {fetched_uuid}, last modified {s3_obj.last_modified}, content_length: {s3_obj.content_length}, etag:{s3_obj.e_tag} \n')
+            
             time.sleep(sleeping_time)
         
         end_time = datetime.datetime.now(tz = datetime.timezone.utc)
