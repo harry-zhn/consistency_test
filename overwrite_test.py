@@ -56,7 +56,7 @@ def test(s3_resource, repeat = 200):
                 for i in range(loop_count):
                     num = random.randint(-int_range, int_range)
                     source.write(str.format("{} \n",num))
-            metadata  = {'prop1': str(random.randint(-int_range, int_range)),
+                    metadata  = {'prop1': str(random.randint(-int_range, int_range)),
                          'prop2': str(random.randint(-int_range, int_range)),
                          'uuid': str(uuid.uuid4())
                          }
