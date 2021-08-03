@@ -13,7 +13,6 @@ def test(s3_resource, object_key = common.object_key_for_overwrite, repeat = 200
 
     local_work_dir = os.path.dirname(os.path.abspath(__file__))
     download_dir = os.path.join(local_work_dir, "test_data/download")
-    object_key = common.object_key_for_overrite
     current_time = datetime.datetime.now(tz = datetime.timezone.utc)
     current_date = current_time.date()
     time_stamp = current_time.time()
