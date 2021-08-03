@@ -25,6 +25,7 @@ object_properties = [
 
 bucket_name = "zharry-consistency-level-test"
 object_key_for_overrite = "overwrite_this"
+object_key_read_after_delete = "read_after_delete"
 
 key_tag = "aws_access_key_id"
 secret_key_tag = "aws_secret_access_key"

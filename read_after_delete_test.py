@@ -1,5 +1,5 @@
 '''
-To test consistency level regarding read-after-write
+To test consistency level regarding read-after-delete
     PutObject
     GetObject
     HeadObject
@@ -8,18 +8,18 @@ Important data to verify
     object key,
         [size, last_modified, metadata]
         acl
-0. create a new object with meta data
-    0.0 keep local record of object size, metadata, and file content
-    0.1 retrieve object for [size, last_modified, metadata] and download file itself
-1. keep updating the object for 200 times with content and meta data
-    1.0 keep local record of object size, metadata, and file content
-    1.1 retrieve object for [size, last_modified, metadata] and download file itself
+0.0 to create or update an object
+0.1 to try HeadObject, and GetObject
+1.0 to delete the object
+1.1 to try to GetObject/HeadObject
+
 
 local record            | remote record   | notes
 =====================================================================================
 0.0                     | 0.1             | expect record[0.0] == record[0.1] 
 -------------------------------------------------------------------------------------
-1.0                     | 1.1             | for 200 times, 
+1.0                     | 1.1             | exception should happen that key doesn't exist
+                        |                 |  for 200 times, 
                         |                 |     expect record[1.1] == record[1.1]
 '''
 
@@ -30,11 +30,13 @@ import random
 import datetime
 import common
 
+import botocore
+
 def test(s3_resource, repeat = 200):
     local_work_dir = os.path.dirname(os.path.abspath(__file__))
     upload_dir = os.path.join(local_work_dir, "test_data/upload")
     download_dir = os.path.join(local_work_dir, "test_data/download")
-    object_key = common.object_key_for_overrite
+    object_key = common.object_key_read_after_delete
     int_range = 2 ** 10
     current_time = datetime.datetime.now(tz = datetime.timezone.utc)
     current_date = current_time.date()
@@ -42,9 +44,9 @@ def test(s3_resource, repeat = 200):
 
     prev_time = current_time
     part_of_filename = f'{current_date.year:04}-{current_date.month:02}-{current_date.day:02}_{time_stamp.hour:02}-{time_stamp.minute:02}-{time_stamp.second:02}'
-    report_filename = os.path.join(local_work_dir, "test_data", f'{part_of_filename}_report.txt')
+    report_filename = os.path.join(local_work_dir, "test_data", f'{part_of_filename}_delete_read_local_report.txt')
     with open(report_filename, "x") as report_file:
-        report_file.write(f"test on key {object_key} at {current_time} \n")
+        report_file.write(f"read after delete local test on key {object_key} at {current_time} \n")
         report_file.write(f'trying to repeat {repeat} times\n')
         for step in range(repeat):
             short_filename = str.format('{0}_{1}', step, part_of_filename)
@@ -62,31 +64,20 @@ def test(s3_resource, repeat = 200):
                          }
             original_size = os.stat(upload_file).st_size
             extra_args = {"Metadata": metadata}
-            s3_resource.Object(common.bucket_name, object_key).upload_file(upload_file, ExtraArgs = extra_args )
-            s3_obj = s3_resource.Object(common.bucket_name, object_key)
-            s3_obj.download_file(download_file)
-            download_size = os.stat(download_file).st_size
-            
-            #validation
-            if s3_obj.metadata != metadata:
-                print("metadata mismatch", file = report_file)
-                print("metadata on download", s3_obj.metadata, file = report_file)
-                print("expected metadata", metadata, file = report_file)
-            if original_size != download_size:
-                print("file size mismatch, original size: ", original_size, "download size: ", download_size , file = report_file)
-            if original_size != s3_obj.content_length:
-                print("file size mismatch, original size: ", original_size, "content_length: ", s3_obj.content_length , file = report_file)
-            #report last_modifed anyway
-            fetched_uuid = s3_obj.metadata['uuid']
-            report_file.write(f'uuid: {fetched_uuid}, last modified {s3_obj.last_modified}, content_length: {s3_obj.content_length} \n')
-            if s3_obj.last_modified < prev_time:
-                print("last_modified is wrong. got, ", s3_obj.last_modified, "which cannot be less than: ", prev_time, file = report_file)
-            e_tag_upload = common.get_MD5(upload_file)
-            e_tag_download = common.get_MD5(download_file)
-            if e_tag_download != e_tag_upload:
-                print("file content md5 mismatch. uploaded file, ", e_tag_upload, " downloaded file, ", e_tag_download, file = report_file)
-            if e_tag_upload != s3_obj.e_tag:
-                print("e_tag is wrong as meta data, ", s3_obj.e_tag, "original file, ", e_tag_upload, file = report_file)
+            #this is to make sure the object exists in the bucket
+            s3_obj_put = s3_resource.Object(common.bucket_name, object_key)
+            s3_obj_put.upload_file(upload_file, ExtraArgs = extra_args )
+
+            #call delete
+            response = s3_obj_put.delete()
+            print(f"response status of DELETE: HTTP Status code {response['ResponseMetadata']['HTTPStatusCode']}, date: {response['ResponseMetadata']['HTTPHeaders']['date']}", file=report_file)
+            try:
+                s3_obj = s3_resource.Object(common.bucket_name, object_key)
+                s3_obj.download_file(download_file)
+                print(f"error: object should be deleted: {s3_obj.metadata}, {s3_obj.last_modified}, etag: {s3_obj.e_tag}, downloaded file, {download_file}", file = report_file)
+            except botocore.exceptions.ClientError as error:
+                response = error.response
+                print(f"file is deleted as expected..., Error-Code: {response['Error']['Code']}, HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']} ")
         end_time = datetime.datetime.now(tz = datetime.timezone.utc)
         deltatime = end_time - current_time
         report_file.write(f'end time: {end_time}, total used: {deltatime} \n')
