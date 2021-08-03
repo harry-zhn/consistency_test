@@ -34,7 +34,7 @@ def test(s3_resource, object_key = common.object_key_for_overwrite, repeat = 200
                 if e_tag_download != s3_obj.e_tag:
                     print("e_tag is wrong as meta data, ", s3_obj.e_tag, "original file, ", e_tag_download, file = report_file)
                 report_file.write(f'uuid: {fetched_uuid}, last modified {s3_obj.last_modified}, content_length: {s3_obj.content_length}, etag:{s3_obj.e_tag} \n')
-            except botocore.exceptions.clientError as error:
+            except botocore.exceptions.ClientError as error:
                 response = error.response
                 print(f"Error happens ..., Error-Code: {response['Error']['Code']}, HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']} ")
 
