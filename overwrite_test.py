@@ -34,7 +34,7 @@ def test(s3_resource, repeat = 200):
     local_work_dir = os.path.dirname(os.path.abspath(__file__))
     upload_dir = os.path.join(local_work_dir, "test_data/upload")
     download_dir = os.path.join(local_work_dir, "test_data/download")
-    object_key = common.object_key_for_overrite
+    object_key = common.object_key_for_overwrite
     int_range = 2 ** 10
     current_time = datetime.datetime.now(tz = datetime.timezone.utc)
     current_date = current_time.date()
