@@ -100,7 +100,7 @@ def test_with(credential_tag, endpoint_url = None, verify_cert = True):
     aws_access_key = os.environ[common.key_tag]
     aws_secret_access = os.environ[common.secret_key_tag]
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
-    repeat = 200
+    repeat = 400
     test(s3_resource, repeat= repeat)
     print("=================DONE=============")
 
