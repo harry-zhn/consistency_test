@@ -30,7 +30,7 @@ def validate_object_keys(response):
                 return False
     return True
 
-def list_test(s3_client, repeat = 200):
+def list_test(s3_client, repeat = 200, v2 = True):
     '''
     to use list_objects_v2 with boto3.client
     '''
@@ -48,7 +48,8 @@ def list_test(s3_client, repeat = 200):
         report_file.write(f"read test for list objects at {current_time} \n")
         report_file.write(f'trying to repeat {repeat} times\n')
         for _ in range(repeat):
-            response = s3_client.list_objects_v2(Bucket = common.bucket_name, Prefix=common.prefix_for_delete_and_list)
+            func_call = s3_client.list_object_v2 if v2 else s3_client.list_objects
+            response = func_call(Bucket = common.bucket_name, Prefix=common.prefix_for_delete_and_list)
             contents = response['Contents']
             if not validate_object_keys(response):
                 print(contents, file=report_file)
@@ -59,7 +60,7 @@ def list_test(s3_client, repeat = 200):
         report_file.write("=====end of report==")
 
 
-def write_and_list(s3_resource, s3_client, repeat = 200):
+def write_and_list(s3_resource, s3_client, repeat = 200, v2 = True):
     '''
     to add two files and delete one files
     '''
@@ -90,14 +91,15 @@ def write_and_list(s3_resource, s3_client, repeat = 200):
             short_filename = f'{key_id}_{part_of_filename}'
             upload_file = os.path.join(upload_dir, short_filename)
             common.upload_object_with_random_data(s3_resource, object_key, upload_file)
-            print(f'adding object: {object_key}', end='')
+            print(f'adding object: {object_key}', end=' ')
 
             key_id = step
             object_key = f'{common.prefix_for_delete_and_list}/{key_id:03}'
             s3_object = s3_resource.Object(common.bucket_name, object_key)
             s3_object.delete()
             print(f'deleting object: {object_key}')
-            response = s3_client.list_objects_v2(Bucket = common.bucket_name, Prefix=common.prefix_for_delete_and_list)
+            func_call = s3_client.list_object_v2 if v2 else s3_client.list_objects
+            response = func_call(Bucket = common.bucket_name, Prefix=common.prefix_for_delete_and_list)
             contents = response['Contents']
             if not validate_object_keys(response):
                 print(contents, file=report_file)
@@ -107,7 +109,7 @@ def write_and_list(s3_resource, s3_client, repeat = 200):
         report_file.write(f'end time: {end_time}, total used: {deltatime} \n')
         report_file.write("=====end of report==")
 
-def test_with_list(credential_tag, endpoint_url = None, verify_cert = True):
+def test_with_list_v2(credential_tag, endpoint_url = None, verify_cert = True):
     if not common.read_aws_credential(credential_tag):
         raise Exception("cannot find credential")
     
@@ -116,6 +118,27 @@ def test_with_list(credential_tag, endpoint_url = None, verify_cert = True):
     s3_client = common.get_s3_client(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 300
     list_test(s3_client, repeat= repeat)
+
+def test_with_write_and_list_v2(credential_tag, endpoint_url = None, verify_cert = True):
+    if not common.read_aws_credential(credential_tag):
+        raise Exception("cannot find credential")
+    
+    aws_access_key = os.environ[common.key_tag]
+    aws_secret_access = os.environ[common.secret_key_tag]
+    s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
+    s3_client = common.get_s3_client(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
+    repeat = 200
+    write_and_list(s3_resource, s3_client, repeat= repeat)
+
+def test_with_list(credential_tag, endpoint_url = None, verify_cert = True):
+    if not common.read_aws_credential(credential_tag):
+        raise Exception("cannot find credential")
+    
+    aws_access_key = os.environ[common.key_tag]
+    aws_secret_access = os.environ[common.secret_key_tag]
+    s3_client = common.get_s3_client(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
+    repeat = 300
+    list_test(s3_client, repeat= repeat, v2=False)
 
 def test_with_write_and_list(credential_tag, endpoint_url = None, verify_cert = True):
     if not common.read_aws_credential(credential_tag):
@@ -126,4 +149,5 @@ def test_with_write_and_list(credential_tag, endpoint_url = None, verify_cert = 
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     s3_client = common.get_s3_client(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 200
-    write_and_list(s3_resource, s3_client, repeat= repeat)
+    write_and_list(s3_resource, s3_client, repeat= repeat, v2 = False)
+
