@@ -13,6 +13,7 @@ def test(s3_resource, object_key = common.object_key_for_overwrite, repeat = 200
 
     local_work_dir = os.path.dirname(os.path.abspath(__file__))
     download_dir = os.path.join(local_work_dir, "test_data/download")
+    common.prepare_local_folder(download_folder=download_dir)
     current_time = datetime.datetime.now(tz = datetime.timezone.utc)
     current_date = current_time.date()
     time_stamp = current_time.time()
@@ -46,7 +47,6 @@ def test(s3_resource, object_key = common.object_key_for_overwrite, repeat = 200
         report_file.write("=====end of report==")
 
 def test_with(credential_tag, endpoint_url = None, verify_cert = True):
-    print("================================= testing with credential: ", credential_tag, "==============================")
     if not common.read_aws_credential(credential_tag):
         raise Exception("cannot find credential")
     
@@ -55,10 +55,8 @@ def test_with(credential_tag, endpoint_url = None, verify_cert = True):
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 200
     test(s3_resource, repeat= repeat)
-    print("=================DONE=============")
 
 def test_with_delete(credential_tag, endpoint_url = None, verify_cert = True):
-    print("================================= testing with credential: ", credential_tag, "==============================")
     if not common.read_aws_credential(credential_tag):
         raise Exception("cannot find credential")
     
@@ -67,4 +65,3 @@ def test_with_delete(credential_tag, endpoint_url = None, verify_cert = True):
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 200
     test(s3_resource, object_key= common.object_key_read_after_delete, repeat= repeat)
-    print("=================DONE=============")

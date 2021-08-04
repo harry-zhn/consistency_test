@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+import list_bucket
 import read_test
 import overwrite_test
 import read_after_delete_test
@@ -33,8 +34,12 @@ if __name__ == "__main__":
     dic_of_tests = {
         "overwrite" : overwrite_test.test_with,
         "remote-read" : read_test.test_with,
+
         "remote-read-after-delete": read_test.test_with_delete,
         "read-after-delete": read_after_delete_test.test_with,
+
+        "list-with-write": list_bucket.test_with_write_and_list,
+        "remote-list-test": list_bucket.test_with_list,
     }
 
     test_name = getattr(args, flag_test_name)
@@ -45,4 +50,6 @@ if __name__ == "__main__":
 
     # run the test
     print("test name:", test_name)
+    print("test with credential:", aws_credential)
     dic_of_tests[test_name](aws_credential, endpoint_url = endpoint_url, verify_cert = verify_certificate)
+    print("=================DONE=============")

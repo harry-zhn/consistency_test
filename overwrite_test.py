@@ -23,10 +23,7 @@ local record            | remote record   | notes
                         |                 |     expect record[1.1] == record[1.1]
 '''
 
-import argparse
-import os, sys
-import uuid
-import random
+import os
 import datetime
 import common
 
@@ -34,8 +31,9 @@ def test(s3_resource, repeat = 200):
     local_work_dir = os.path.dirname(os.path.abspath(__file__))
     upload_dir = os.path.join(local_work_dir, "test_data/upload")
     download_dir = os.path.join(local_work_dir, "test_data/download")
+    common.prepare_local_folder(upload_folder=upload_dir, download_folder=download_dir)
+
     object_key = common.object_key_for_overwrite
-    int_range = 2 ** 10
     current_time = datetime.datetime.now(tz = datetime.timezone.utc)
     current_date = current_time.date()
     time_stamp = current_time.time()
@@ -49,20 +47,12 @@ def test(s3_resource, repeat = 200):
         for step in range(repeat):
             short_filename = str.format('{0}_{1}', step, part_of_filename)
             upload_file = os.path.join(upload_dir, short_filename)
-            download_file = os.path.join(download_dir, short_filename)
-            with open(upload_file, 'x') as source:
-                source.write(f"overwrite test at {current_time}")
-                loop_count = random.randrange(10, 30)
-                for i in range(loop_count):
-                    num = random.randint(-int_range, int_range)
-                    source.write(str.format("{} \n",num))
-                    metadata  = {'prop1': str(random.randint(-int_range, int_range)),
-                         'prop2': str(random.randint(-int_range, int_range)),
-                         'uuid': str(uuid.uuid4())
-                         }
+
+            metadata = common.upload_object_with_random_data(s3_resource, object_key, upload_file)
             original_size = os.stat(upload_file).st_size
-            extra_args = {"Metadata": metadata}
-            s3_resource.Object(common.bucket_name, object_key).upload_file(upload_file, ExtraArgs = extra_args )
+            
+            #to GetObject for verification
+            download_file = os.path.join(download_dir, short_filename)
             s3_obj = s3_resource.Object(common.bucket_name, object_key)
             s3_obj.download_file(download_file)
             download_size = os.stat(download_file).st_size
@@ -93,7 +83,6 @@ def test(s3_resource, repeat = 200):
         report_file.write("=====end of report==")
 
 def test_with(credential_tag, endpoint_url = None, verify_cert = True):
-    print("================================= testing with credential: ", credential_tag, "==============================")
     if not common.read_aws_credential(credential_tag):
         raise Exception("cannot find credential")
     
@@ -102,4 +91,3 @@ def test_with(credential_tag, endpoint_url = None, verify_cert = True):
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 400
     test(s3_resource, repeat= repeat)
-    print("=================DONE=============")
