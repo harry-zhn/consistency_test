@@ -14,12 +14,12 @@ api                                     | testable  | notes
 1.6     PutObjectRetention              |
 1.6.1   GetObjectRetention              |
 ----------------------------------------------------------------
-1.7     ListObjects                     |
-1.8     ListObjectsV2                   |
+1.7     ListObjects                     | yes
+1.8     ListObjectsV2                   | yes
 1.9     ListObjectVersions              |
 -----------------------------------------------------------------
-1.10    DeleteObject                    |
-1.11    DeleteObjects                   |
+1.10    DeleteObject                    | yes
+1.11    DeleteObjects                   | yes
 -----------------------------------------------------------------
 1.12    CreateMultiPartUpload
 1.12.1  UploadPart

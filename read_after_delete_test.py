@@ -23,8 +23,7 @@ local record            | remote record   | notes
                         |                 |     expect record[1.1] == record[1.1]
 '''
 
-import argparse
-import os, sys
+import os
 import uuid
 import random
 import datetime
