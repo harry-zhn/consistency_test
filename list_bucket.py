@@ -25,7 +25,8 @@ def validate_object_keys(response):
     if size_object_keys > 1:
         for index in range(1, size_object_keys):
             if object_keys[index] - object_keys[index-1] != 1:
-                print("object keys in the list is not consecutive!")
+                print(f"object keys in the list is not consecutive!, left key:{object_keys[index-1]}, right key: {object_keys[index]}")
+                print(object_keys)
                 return False
     return True
 
@@ -89,11 +90,13 @@ def write_and_list(s3_resource, s3_client, repeat = 200):
             short_filename = f'{key_id}_{part_of_filename}'
             upload_file = os.path.join(upload_dir, short_filename)
             common.upload_object_with_random_data(s3_resource, object_key, upload_file)
+            print(f'adding object: {object_key}', end='')
 
             key_id = step
             object_key = f'{common.prefix_for_delete_and_list}/{key_id:03}'
             s3_object = s3_resource.Object(common.bucket_name, object_key)
             s3_object.delete()
+            print(f'deleting object: {object_key}')
             response = s3_client.list_objects_v2(Bucket = common.bucket_name, Prefix=common.prefix_for_delete_and_list)
             contents = response['Contents']
             if not validate_object_keys(response):
