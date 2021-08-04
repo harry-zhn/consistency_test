@@ -39,7 +39,7 @@ if __name__ == "__main__":
         "read-after-delete": read_after_delete_test.test_with,
 
         "list-with-write": list_bucket.test_with_write_and_list,
-        "remote-list-test": list_bucket.test_with_list,
+        "remote-list": list_bucket.test_with_list,
     }
 
     test_name = getattr(args, flag_test_name)
