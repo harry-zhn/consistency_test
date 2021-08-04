@@ -1,8 +1,13 @@
 import os
+import random
+import datetime
+import uuid
 import hashlib
 
 import boto3
 import botocore
+
+import common
 
 object_properties = [
     #'delete',
@@ -26,6 +31,7 @@ object_properties = [
 bucket_name = "zharry-consistency-level-test"
 object_key_for_overwrite = "overwrite_this"
 object_key_read_after_delete = "read_after_delete"
+prefix_for_delete_and_list = "delete_and_list"
 
 key_tag = "aws_access_key_id"
 secret_key_tag = "aws_secret_access_key"
@@ -78,6 +84,10 @@ def get_bucket(s3_resource, bucket_name):
     bucket = s3_resource.Bucket(bucket_name)
     return bucket
 
+def prepare_local_folder(upload_folder = None, download_folder = None):
+    if upload_folder: os.makedirs(upload_folder, exist_ok = True)
+    if download_folder: os.makedirs(download_folder, exist_ok = True)
+
 def list_objects(s3_client, bucket_name):
     return s3_client.list_objects_v2(Bucket="netapp-consistency-test")
 
@@ -98,6 +108,7 @@ def get_MD5(full_file_path):
 
         file_hash_result = str.format('"{}"',file_hash.hexdigest())
     return file_hash_result
+
 def empty_bucket(s3_resource, bucket_name):
     bucket = get_bucket(s3_resource, bucket_name)
     for obj in bucket.objects.all():
@@ -111,5 +122,23 @@ def empty_bucket(s3_resource, bucket_name):
         print(s3_obj.content_length)
     except botocore.exceptions.ClientError as error:
         print(error.response)
+
+def upload_object_with_random_data(s3_resource, object_key, upload_filepath):
+    int_range = 2 ** 10
+    with open(upload_filepath, 'x') as source:
+        source.write(f"overwrite test at {datetime.datetime.now(tz = datetime.timezone.utc)}")
+        loop_count = random.randrange(10, 30)
+        for i in range(loop_count):
+            num = random.randint(-int_range, int_range)
+            source.write(str.format("{} \n",num))
+        
+        metadata  = {'prop1': str(random.randint(-int_range, int_range)),
+                    'prop2': str(random.randint(-int_range, int_range)),
+                    'uuid': str(uuid.uuid4())
+                    }
+        extra_args = {"Metadata": metadata}
+        s3_resource.Object(common.bucket_name, object_key).upload_file(upload_filepath, ExtraArgs = extra_args )
+        return metadata
+
 
 
