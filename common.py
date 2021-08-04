@@ -115,13 +115,7 @@ def empty_bucket(s3_resource, bucket_name):
         obj.delete()
     print(f"s3 bucket:[{bucket_name}] should be empty now")
     for obj in bucket.objects.all():
-        print(obj.key, obj.delete_marker)
-    s3_obj = s3_resource.Object(bucket_name, "food")
-    try:
-        print("Trying to get object with key [foo]")
-        print(s3_obj.content_length)
-    except botocore.exceptions.ClientError as error:
-        print(error.response)
+        print(obj.key)
 
 def upload_object_with_random_data(s3_resource, object_key, upload_filepath):
     int_range = 2 ** 10

@@ -44,6 +44,8 @@ if __name__ == "__main__":
         "list-with-write": list_bucket.test_with_write_and_list,
         "remote-list": list_bucket.test_with_list,
 
+        "deletes-and-list": list_bucket.test_with_deletes_and_list
+
     }
 
     test_name = getattr(args, flag_test_name)
