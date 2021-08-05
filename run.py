@@ -54,7 +54,7 @@ if __name__ == "__main__":
     test_name = getattr(args, flag_test_name)
     if not test_name or test_name not in dic_of_tests:
         parser.print_usage()
-        print("Available tests: ", list(dic_of_tests.keys))
+        print("Available tests: ", list(dic_of_tests.keys()))
         sys.exit(0)
 
     # run the test
