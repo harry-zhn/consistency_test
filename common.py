@@ -31,6 +31,7 @@ object_properties = [
 bucket_name = "zharry-consistency-level-test"
 object_key_for_overwrite = "overwrite_this"
 object_key_read_after_delete = "read_after_delete"
+object_key_for_tagging = "play_with_tagging_on_this"
 prefix_for_delete_and_list = "delete_and_list"
 
 key_tag = "aws_access_key_id"
