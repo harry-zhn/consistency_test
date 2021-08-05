@@ -8,6 +8,48 @@ import common
 
 import botocore
 
+
+def read_obj_tagging(s3_client, object_key = common.object_key_for_overwrite, repeat = 200):
+    sleeping_time = 0.25 # for 50 millisec
+    current_time = datetime.datetime.now(tz = datetime.timezone.utc)
+    current_date = current_time.date()
+    time_stamp = current_time.time()
+
+    local_work_dir = os.path.dirname(os.path.abspath(__file__))
+    download_dir = os.path.join(local_work_dir, "test_data/download")
+    common.prepare_local_folder(download_folder=download_dir)
+    object_key = common.object_key_for_tagging
+
+    part_of_filename = f'{current_date.year:04}-{current_date.month:02}-{current_date.day:02}_{time_stamp.hour:02}-{time_stamp.minute:02}-{time_stamp.second:02}'
+    report_filename = os.path.join(local_work_dir, "test_data", f'{part_of_filename}_read_tagging_report.txt')
+
+    with open(report_filename, "x") as report_file:
+        report_file.write(f"read tagging test on key {object_key} at {current_time} \n")
+        report_file.write(f'trying to repeat {repeat} times\n')
+        prev_tag = {}
+        for step in range(repeat):
+            response = s3_client.get_object_tagging(Bucket = common.bucket_name, Key = object_key)
+            tag_list_returned = response['TagSet']
+            if prev_tag: 
+                #report error
+                if len(prev_tag) != len(tag_list_returned):
+                    print(f"at step {step}, expect to have {len(prev_tag)}, Got {len(tag_list_returned)}", file=report_file)
+                else:
+                    for tag in tag_list_returned:
+                        if prev_tag[tag['Key']] > int(tag['Value']):
+                            print(f"At step {step}, Expect to have value no less than {prev_tag[tag['Key']]}, got {tag['Value']}", file=report_file)
+            # convert returned tags to a lookup table
+            for tag in tag_list_returned:
+                prev_tag[tag['Key']] = int(tag['Value'])
+
+            time.sleep(sleeping_time)
+
+        end_time = datetime.datetime.now(tz = datetime.timezone.utc)
+        deltatime = end_time - current_time
+        report_file.write(f'end time: {end_time}, total used: {deltatime} \n')
+        report_file.write("=====end of report==")
+
+
 def test(s3_resource, object_key = common.object_key_for_overwrite, repeat = 200):
     sleeping_time = 0.25 # for 50 millisec
 
@@ -65,3 +107,13 @@ def test_with_delete(credential_tag, endpoint_url = None, verify_cert = True):
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 200
     test(s3_resource, object_key= common.object_key_read_after_delete, repeat= repeat)
+
+def test_with_tagging(credential_tag, endpoint_url = None, verify_cert = True):
+    if not common.read_aws_credential(credential_tag):
+        raise Exception("cannot find credential")
+    
+    aws_access_key = os.environ[common.key_tag]
+    aws_secret_access = os.environ[common.secret_key_tag]
+    s3_client = common.get_s3_client(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
+    repeat = 300
+    read_obj_tagging(s3_client, object_key= common.object_key_read_after_delete, repeat= repeat)

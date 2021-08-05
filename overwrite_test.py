@@ -25,7 +25,69 @@ local record            | remote record   | notes
 
 import os
 import datetime
+import random
+
+from botocore.retries import bucket
 import common
+
+def test_object_tagging(s3_resource, s3_client, repeat = 200):
+    local_work_dir = os.path.dirname(os.path.abspath(__file__))
+    upload_dir = os.path.join(local_work_dir, "test_data/upload")
+    download_dir = os.path.join(local_work_dir, "test_data/download")
+    common.prepare_local_folder(upload_folder=upload_dir, download_folder=download_dir)
+
+    object_key = common.object_key_for_tagging
+    current_time = datetime.datetime.now(tz = datetime.timezone.utc)
+    current_date = current_time.date()
+    time_stamp = current_time.time()
+
+    part_of_filename = f'{current_date.year:04}-{current_date.month:02}-{current_date.day:02}_{time_stamp.hour:02}-{time_stamp.minute:02}-{time_stamp.second:02}'
+    # make sure the object exists
+    short_filename = f'tagging_test_{part_of_filename}'
+    upload_file = os.path.join(upload_dir, short_filename)
+
+    metadata = common.upload_object_with_random_data(s3_resource, object_key, upload_file)
+    original_size = os.stat(upload_file).st_size
+
+
+    prev_time = current_time
+    report_filename = os.path.join(local_work_dir, "test_data", f'{part_of_filename}_report.txt')
+
+    with open(report_filename, "x") as report_file:
+        report_file.write(f"object tagging test on key {object_key} at {current_time} \n")
+        report_file.write(f'trying to repeat {repeat} times\n')
+        tag_lookup = {
+            'Key1': 0, 
+            'Key2': 0, 
+            'Key3': 0, 
+            'Key4': 0, 
+            'Key5': 0, 
+        }
+        int_range = 10
+        for step in range(repeat):
+            tag_list = []
+            for tag in tag_lookup:
+                val = random.randrange(1, int_range)
+                tag_lookup[tag] += val
+                tag_list.append({'Key':tag, 'Value': str(tag_lookup[tag])})
+            s3_client.put_object_tagging(Bucket = common.bucket_name, Key = object_key, Tagging = {'TagSet': tag_list})
+            response = s3_client.get_object_tagging(Bucket = common.bucket_name, Key = object_key)
+            tag_list_returned = response['TagSet']
+            if tag_list != tag_list_returned:
+                #report error
+                if len(tag_list) != len(tag_list_returned):
+                    print(f"at step {step}, expect to have {len(tag_list)}, Got {len(tag_list_returned)}", file=report_file)
+                else:
+                    size = len(tag_list)
+                    for index in range(size):
+                        tag = tag_list_returned[index]
+                        if int(tag['Value']) != tag_lookup[tag['Key']]:
+                            print(f"At step {step}, Expect to have value {tag_lookup[tag['Key']]}, got {tag['Value']}", file=report_file)
+
+        end_time = datetime.datetime.now(tz = datetime.timezone.utc)
+        deltatime = end_time - current_time
+        report_file.write(f'end time: {end_time}, total used: {deltatime} \n')
+        report_file.write("=====end of report==")
 
 def test(s3_resource, repeat = 200):
     local_work_dir = os.path.dirname(os.path.abspath(__file__))
@@ -91,3 +153,15 @@ def test_with(credential_tag, endpoint_url = None, verify_cert = True):
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 400
     test(s3_resource, repeat= repeat)
+
+def test_with_tagging(credential_tag, endpoint_url = None, verify_cert = True):
+    if not common.read_aws_credential(credential_tag):
+        raise Exception("cannot find credential")
+    
+    aws_access_key = os.environ[common.key_tag]
+    aws_secret_access = os.environ[common.secret_key_tag]
+    s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
+    s3_client = common.get_s3_client(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
+
+    repeat = 400
+    test_object_tagging(s3_resource, s3_client, repeat= repeat)

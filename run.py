@@ -33,7 +33,9 @@ if __name__ == "__main__":
 
     dic_of_tests = {
         "overwrite" : overwrite_test.test_with,
+        "overwrite-tagging" : overwrite_test.test_with_tagging,
         "remote-read" : read_test.test_with,
+        "remote-read-tagging" : read_test.test_with_tagging,
 
         "remote-read-after-delete": read_test.test_with_delete,
         "read-after-delete": read_after_delete_test.test_with,
@@ -45,6 +47,7 @@ if __name__ == "__main__":
         "remote-list": list_bucket.test_with_list,
 
         "deletes-and-list": list_bucket.test_with_deletes_and_list
+
 
     }
 
