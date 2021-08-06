@@ -1,7 +1,7 @@
 api                                     | testable  | notes
 -------------------------------------------------------------
 1.      for objects                     |
-1.1     CopyObject                      |           | 
+1.1     CopyObject                      | yes       | local and remote read 
 1.2     PutObject                       | yes       | local and remote read
 1.2.1   GetObject                       | yes       | local and remote read
 1.2.2   HeadObject                      | yes       | local and remote read
