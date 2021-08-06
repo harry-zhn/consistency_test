@@ -51,6 +51,7 @@ if __name__ == "__main__":
         "deletes-and-list": list_bucket.test_with_deletes_and_list,
 
         "multipart-upload-create": multipart_upload.test_with,
+        "multipart-uploads": multipart_upload.test_with_uploads,
     }
 
     test_name = getattr(args, flag_test_name)

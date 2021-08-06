@@ -1,4 +1,4 @@
-api                                     | testable  | notes
+api                                     | test      | notes
 -------------------------------------------------------------
 1.      for objects                     |
 1.1     CopyObject                      | yes       | local and remote read 
@@ -23,7 +23,7 @@ api                                     | testable  | notes
 -----------------------------------------------------------------
 1.12    CreateMultiPartUpload           | yes       | local test
 1.12.1  UploadPart                      | yes       | local test 
-1.12.2  UploadPartCopy                  | yes       | local test
+1.12.2  UploadPartCopy                  |   
 1.12.3  ListParts                       | yes       | local test
 1.12.4  ListMultipartUploads            | yes       | local test
 1.12.5  CompleteMultipartUpload         | yes       | local test
