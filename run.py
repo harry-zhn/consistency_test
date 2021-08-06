@@ -35,6 +35,7 @@ if __name__ == "__main__":
     dic_of_tests = {
         "overwrite" : overwrite_test.test_with,
         "overwrite-tagging" : overwrite_test.test_with_tagging,
+        "overwrite-with-copy": overwrite_test.test_with_copy_object,
         "remote-read" : read_test.test_with,
         "remote-read-tagging" : read_test.test_with_tagging,
 

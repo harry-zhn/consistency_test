@@ -1,6 +1,6 @@
 '''
 Tests
-1.12    CreateMultiPartUpload           | yes       | local test
+1.12    CreateMultiPartUpload           | yes *     | local test
 1.12.1  UploadPart                      | yes       | local test 
 1.12.2  UploadPartCopy                  | yes       | local test
 1.12.3  ListParts                       | yes       | local test
@@ -8,10 +8,10 @@ Tests
 1.12.5  CompleteMultipartUpload         | yes       | local test
 1.12.6  AbortMultipartUpload            | yes       | local test
 '''
+
 import os
 import datetime
 
-from botocore.retries import bucket
 
 import common
 
