@@ -5,6 +5,7 @@ import list_bucket
 import read_test
 import overwrite_test
 import read_after_delete_test
+import multipart_upload
 
 if __name__ == "__main__":
     flag_aws_credential = "aws_credential"
@@ -46,9 +47,9 @@ if __name__ == "__main__":
         "list-with-write": list_bucket.test_with_write_and_list,
         "remote-list": list_bucket.test_with_list,
 
-        "deletes-and-list": list_bucket.test_with_deletes_and_list
+        "deletes-and-list": list_bucket.test_with_deletes_and_list,
 
-
+        "multipart-upload-create": multipart_upload.test_with,
     }
 
     test_name = getattr(args, flag_test_name)
