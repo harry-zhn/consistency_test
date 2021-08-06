@@ -70,11 +70,12 @@ def test(s3_resource, object_key = common.object_key_for_overwrite, repeat = 200
             download_file = os.path.join(download_dir, short_filename)
             s3_obj = s3_resource.Object(common.bucket_name, object_key)
             try:
+                e_tag = s3_obj.e_tag
                 s3_obj.download_file(download_file)
                 #report file info here
                 fetched_uuid = s3_obj.metadata['uuid']
                 e_tag_download = common.get_MD5(download_file)
-                if e_tag_download != s3_obj.e_tag:
+                if e_tag_download != e_tag:
                     print("e_tag is wrong as meta data, ", s3_obj.e_tag, "original file, ", e_tag_download, file = report_file)
                 report_file.write(f'uuid: {fetched_uuid}, last modified {s3_obj.last_modified}, content_length: {s3_obj.content_length}, etag:{s3_obj.e_tag} \n')
             except botocore.exceptions.ClientError as error:
