@@ -32,6 +32,7 @@ bucket_name = "zharry-consistency-level-test"
 object_key_for_overwrite = "overwrite_this"
 object_key_read_after_delete = "read_after_delete"
 object_key_for_tagging = "play_with_tagging_on_this"
+object_key_prefix_for_multipart_upload = "multipart_upload_"
 prefix_for_delete_and_list = "delete_and_list"
 
 key_tag = "aws_access_key_id"
@@ -117,6 +118,12 @@ def empty_bucket(s3_resource, bucket_name):
     print(f"s3 bucket:[{bucket_name}] should be empty now")
     for obj in bucket.objects.all():
         print(obj.key)
+def abort_all_multipart_uploads(s3_client, bucket_name):
+    response = s3_client.list_multipart_uploads(Bucket = bucket_name)
+    if 'Uploads' not in response:
+        return
+    for upload in response['Uploads']:
+        s3_client.abort_multipart_upload(Bucket = bucket_name, Key = upload['Key'], UploadId = upload['UploadId'])
 
 def upload_object_with_random_data(s3_resource, object_key, upload_filepath):
     int_range = 2 ** 10
@@ -131,9 +138,9 @@ def upload_object_with_random_data(s3_resource, object_key, upload_filepath):
                     'prop2': str(random.randint(-int_range, int_range)),
                     'uuid': str(uuid.uuid4())
                     }
-        extra_args = {"Metadata": metadata}
-        s3_resource.Object(common.bucket_name, object_key).upload_file(upload_filepath, ExtraArgs = extra_args )
-        return metadata
+    extra_args = {"Metadata": metadata}
+    s3_resource.Object(common.bucket_name, object_key).upload_file(upload_filepath, ExtraArgs = extra_args )
+    return metadata
 
 
 
