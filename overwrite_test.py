@@ -157,7 +157,7 @@ def copy_object(s3_resource, s3_client,  repeat = 200):
         report_file.write(f'end time: {end_time}, total used: {deltatime} \n')
         report_file.write("=====end of report==")
 
-def test(s3_resource, repeat = 200):
+def overwrite_object(s3_resource, repeat = 200):
     local_work_dir = os.path.dirname(os.path.abspath(__file__))
     upload_dir = os.path.join(local_work_dir, "test_data/upload")
     download_dir = os.path.join(local_work_dir, "test_data/download")
@@ -179,6 +179,7 @@ def test(s3_resource, repeat = 200):
             upload_file = os.path.join(upload_dir, short_filename)
 
             metadata = common.upload_object_with_random_data(s3_resource, object_key, upload_file)
+            time_stamp_finish_upload = datetime.datetime.now(tz = datetime.timezone.utc)
             original_size = os.stat(upload_file).st_size
             
             #to GetObject for verification
@@ -198,7 +199,7 @@ def test(s3_resource, repeat = 200):
                 print("file size mismatch, original size: ", original_size, "content_length: ", s3_obj.content_length , file = report_file)
             #report last_modifed anyway
             fetched_uuid = s3_obj.metadata['uuid']
-            report_file.write(f'uuid: {fetched_uuid}, last modified {s3_obj.last_modified}, content_length: {s3_obj.content_length} \n')
+            report_file.write(f'uuid: {fetched_uuid}, last modified {s3_obj.last_modified}, content_length: {s3_obj.content_length}, finished upload time:{time_stamp_finish_upload} \n')
             if s3_obj.last_modified < prev_time:
                 print("last_modified is wrong. got, ", s3_obj.last_modified, "which cannot be less than: ", prev_time, file = report_file)
             e_tag_upload = common.get_MD5(upload_file)
@@ -220,7 +221,7 @@ def test_with(credential_tag, endpoint_url = None, verify_cert = True):
     aws_secret_access = os.environ[common.secret_key_tag]
     s3_resource = common.get_s3_resource(aws_access_key, aws_secret_access, endpoint = endpoint_url, verify_ssl_cert = verify_cert)
     repeat = 400
-    test(s3_resource, repeat= repeat)
+    overwrite_object(s3_resource, repeat= repeat)
 
 def test_with_tagging(credential_tag, endpoint_url = None, verify_cert = True):
     if not common.read_aws_credential(credential_tag):
